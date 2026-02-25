@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSS 信息看板</title>
+<style>
+/* ===== Reset & Base ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f3f4f6;--card:#fff;--text:#1f2937;--text2:#6b7280;--border:#e5e7eb;
+  --accent:#2563eb;--accent-light:#eff6ff;--sidebar-w:280px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex;min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+
+/* ===== Sidebar ===== */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:var(--card);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;
+  transition:transform .3s;
+}
+.sidebar-header{padding:20px 20px 12px;border-bottom:1px solid var(--border)}
+.sidebar-header h1{font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.sidebar-header h1 svg{width:22px;height:22px;fill:var(--accent)}
+.sidebar-header .updated{font-size:.72rem;color:var(--text2);margin-top:4px}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0}
+.nav-group-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);padding:14px 20px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;transition:background .15s;font-size:.88rem}
+.nav-item:hover{background:var(--accent-light)}
+.nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:600}
+.nav-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.nav-count{margin-left:auto;font-size:.72rem;background:var(--bg);color:var(--text2);padding:1px 8px;border-radius:10px;font-weight:500}
+.nav-item.active .nav-count{background:var(--accent);color:#fff}
+.nav-all{font-weight:600}
+
+/* ===== Mobile hamburger ===== */
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.hamburger svg{width:20px;height:20px;fill:var(--text)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:90}
+
+/* ===== Main ===== */
+.main{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh}
+
+/* Top bar */
+.topbar{
+  position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--border);
+  padding:12px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.search-box{
+  flex:1;min-width:200px;position:relative;
+}
+.search-box input{
+  width:100%;padding:8px 14px 8px 36px;border:1px solid var(--border);border-radius:8px;
+  font-size:.88rem;outline:none;transition:border .2s;background:var(--bg);
+}
+.search-box input:focus{border-color:var(--accent)}
+.search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:var(--text2)}
+.time-toggle{display:flex;background:var(--bg);border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.time-toggle button{padding:6px 14px;font-size:.78rem;font-weight:500;color:var(--text2);transition:all .15s}
+.time-toggle button.active{background:var(--accent);color:#fff}
+.stat-badge{font-size:.78rem;color:var(--text2);white-space:nowrap}
+
+/* Content area */
+.content{padding:20px 24px 60px;flex:1}
+.empty-state{text-align:center;padding:80px 20px;color:var(--text2)}
+.empty-state svg{width:48px;height:48px;fill:var(--border);margin-bottom:12px}
+
+/* Cards */
+.card{
+  background:var(--card);border-radius:12px;padding:22px 24px 18px;margin-bottom:14px;
+  border:1px solid var(--border);transition:box-shadow .2s,transform .2s;position:relative;overflow:hidden;
+}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);transform:translateY(-1px)}
+.card-accent{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 4px 4px 0}
+
+.card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.card-source{font-size:.72rem;font-weight:600;padding:2px 10px;border-radius:12px;color:#fff;white-space:nowrap}
+.card-category{font-size:.7rem;color:var(--text2);background:var(--bg);padding:2px 10px;border-radius:12px}
+.card-date{font-size:.78rem;color:var(--accent);font-weight:600;margin-left:auto;white-space:nowrap;display:flex;align-items:center;gap:5px;background:rgba(0,122,255,.08);padding:3px 10px;border-radius:10px}
+.card-date svg{width:14px;height:14px;fill:var(--accent)}
+
+.card-title{font-size:1.05rem;font-weight:700;margin-bottom:8px;line-height:1.5;color:var(--text)}
+.card-summary{font-size:.88rem;color:#444;line-height:1.6;margin-bottom:14px}
+
+.card-link{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600;color:var(--accent);transition:opacity .2s}
+.card-link:hover{opacity:.7}
+.card-link svg{width:13px;height:13px;fill:var(--accent);transition:transform .2s}
+.card-link:hover svg{transform:translateX(3px)}
+
+/* Loading */
+.loading{text-align:center;padding:80px 20px;color:var(--text2)}
+.loading .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Footer */
+.footer{text-align:center;padding:16px;font-size:.72rem;color:var(--text2);border-top:1px solid var(--border)}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .overlay.open{display:block}
+  .hamburger{display:block}
+  .main{margin-left:0}
+  .topbar{padding:12px 12px 12px 52px}
+  .content{padding:14px 12px 60px}
+  .card{padding:16px 16px 14px}
+  :root{--sidebar-w:260px}
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile hamburger -->
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+  <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>
+      <svg viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 112.18 2.18 2.18 2.18 0 01-2.18-2.18zM4 4.44A15.56 15.56 0 0119.56 20M4 10.1A9.9 9.9 0 0113.9 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      RSS 信息看板
+    </h1>
+    <div class="updated" id="updatedAt">加载中...</div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <!-- filled by JS -->
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="搜索标题或内容..." oninput="onSearch()">
+    </div>
+    <div class="time-toggle">
+      <button class="active" onclick="setTimeRange(0,this)">全部</button>
+      <button onclick="setTimeRange(3,this)">3天</button>
+      <button onclick="setTimeRange(7,this)">7天</button>
+      <button onclick="setTimeRange(15,this)">15天</button>
+      <button onclick="setTimeRange(30,this)">30天</button>
+    </div>
+    <div class="stat-badge" id="statBadge"></div>
+  </div>
+
+  <div class="content" id="content">
+    <div class="loading"><div class="spinner"></div>正在加载数据...</div>
+  </div>
+
+  <div class="footer">RSS Dashboard &middot; 数据由 fetch_feeds.js 抓取</div>
+</div>
+
+<script>
+// ===== State =====
+let DATA = null;
+let currentFilter = 'all'; // 'all' | feedId | 'cat:分类名'
+let currentDays = 0; // 0 = 不限时间
+let searchQuery = '';
+
+// ===== Data Loading =====
+async function loadData() {
+  try {
+    const resp = await fetch('raw_feeds.json?t=' + Date.now());
+    DATA = await resp.json();
+    // 按时间倒序排列
+    DATA.articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    renderSidebar();
+    renderCards();
+    document.getElementById('updatedAt').textContent =
+      '更新: ' + new Date(DATA.fetchedAt).toLocaleString('zh-CN') +
+      ' · ' + DATA.successCount + '/' + DATA.feedCount + ' 源';
+  } catch (e) {
+    document.getElementById('content').innerHTML =
+      '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20" stroke="#ccc" stroke-width="2" stroke-linecap="round"/></svg>' +
+      '<p>无法加载 raw_feeds.json</p><p style="font-size:.8rem;margin-top:8px">请先运行 <code>node fetch_feeds.js</code> 生成数据，然后通过 HTTP 服务器访问</p></div>';
+  }
+}
+
+// ===== Sidebar =====
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  const counts = {};
+  const catCounts = {};
+
+  DATA.articles.forEach(a => {
+    counts[a.feedId] = (counts[a.feedId] || 0) + 1;
+    catCounts[a.category] = (catCounts[a.category] || 0) + 1;
+  });
+
+  // Group feeds by category
+  const catMap = {};
+  DATA.feeds.forEach(f => {
+    if (!catMap[f.category]) catMap[f.category] = [];
+    catMap[f.category].push(f);
+  });
+
+  let html = '';
+  // "All" item
+  html += `<div class="nav-item nav-all active" data-filter="all" onclick="setFilter('all',this)">
+    <span class="nav-dot" style="background:var(--accent)"></span>全部
+    <span class="nav-count">${DATA.articles.length}</span>
+  </div>`;
+
+  for (const [cat, feeds] of Object.entries(catMap)) {
+    html += `<div class="nav-group-label">${cat}</div>`;
+    // Category row
+    html += `<div class="nav-item" data-filter="cat:${cat}" onclick="setFilter('cat:${cat}',this)">
+      <span class="nav-dot" style="background:#9ca3af"></span>${cat} (全部)
+      <span class="nav-count">${catCounts[cat] || 0}</span>
+    </div>`;
+    for (const f of feeds) {
+      const errMark = f.error ? ' ⚠' : '';
+      html += `<div class="nav-item" data-filter="${f.id}" onclick="setFilter('${f.id}',this)">
+        <span class="nav-dot" style="background:${f.color}"></span>${f.nameZh || f.name}${errMark}
+        <span class="nav-count">${counts[f.id] || 0}</span>
+      </div>`;
+    }
+  }
+  nav.innerHTML = html;
+}
+
+// ===== Filter / Search =====
+function setFilter(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderCards();
+  // close sidebar on mobile
+  if (window.innerWidth <= 768) toggleSidebar();
+}
+
+function onSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+  renderCards();
+}
+
+function getFilteredArticles() {
+  return DATA.articles.filter(a => {
+    // Filter
+    if (currentFilter !== 'all') {
+      if (currentFilter.startsWith('cat:')) {
+        if (a.category !== currentFilter.slice(4)) return false;
+      } else {
+        if (a.feedId !== currentFilter) return false;
+      }
+    }
+    // Time range
+    if (currentDays > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const cutoff = today.getTime() - currentDays * 86400000;
+      if (new Date(a.pubDate).getTime() < cutoff) return false;
+    }
+    // Search
+    if (searchQuery) {
+      const hay = [a.title, a.summary, a.feedName, a.feedNameZh].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(searchQuery)) return false;
+    }
+    return true;
+  });
+}
+
+// ===== Render Cards =====
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr || '未知';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function updateSidebarCounts() {
+  // 用时间+搜索条件（不含源筛选）重新统计每个源/分类的文章数
+  const counts = {};
+  const catCounts = {};
+  let total = 0;
+  DATA.articles.forEach(a => {
+    // Time range
+    if (currentDays > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const cutoff = today.getTime() - currentDays * 86400000;
+      if (new Date(a.pubDate).getTime() < cutoff) return;
+    }
+    // Search
+    if (searchQuery) {
+      const hay = [a.title, a.summary, a.feedName, a.feedNameZh].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(searchQuery)) return;
+    }
+    total++;
+    counts[a.feedId] = (counts[a.feedId] || 0) + 1;
+    catCounts[a.category] = (catCounts[a.category] || 0) + 1;
+  });
+  // 更新侧边栏数字
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const filter = el.dataset.filter;
+    if (!filter) return;
+    const countEl = el.querySelector('.nav-count');
+    if (!countEl) return;
+    let n = 0;
+    if (filter === 'all') n = total;
+    else if (filter.startsWith('cat:')) n = catCounts[filter.slice(4)] || 0;
+    else n = counts[filter] || 0;
+    countEl.textContent = n;
+  });
+}
+
+function renderCards() {
+  const articles = getFilteredArticles();
+  const box = document.getElementById('content');
+  document.getElementById('statBadge').textContent = `${articles.length} 篇文章`;
+  updateSidebarCounts();
+
+  if (!articles.length) {
+    box.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#d1d5db" stroke-width="2"/><path d="M8 15s1.5 2 4 2 4-2 4-2" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#d1d5db"/><circle cx="15" cy="10" r="1" fill="#d1d5db"/></svg><p>没有匹配的文章</p></div>';
+    return;
+  }
+
+  box.innerHTML = articles.map(a => {
+    return `<div class="card">
+      <div class="card-accent" style="background:${a.color}"></div>
+      <div class="card-top">
+        <span class="card-source" style="background:${a.color}">${a.feedNameZh || a.feedName}</span>
+        <span class="card-category">${a.category}</span>
+        <span class="card-date">
+          <svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.2A5.8 5.8 0 1113.8 8 5.8 5.8 0 018 2.2zm-.4 2.6v3.6l3 1.8.6-1-2.4-1.4V4.8z"/></svg>
+          ${formatDate(a.pubDate)}
+        </span>
+      </div>
+      <div class="card-title">${a.title}</div>
+      ${a.summary ? `<div class="card-summary">${a.summary}</div>` : ''}
+      ${a.link ? `<a class="card-link" href="${a.link}" target="_blank" rel="noopener">
+        阅读原文
+        <svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ===== Time Range Toggle =====
+function setTimeRange(days, btn) {
+  currentDays = days;
+  document.querySelectorAll('.time-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+// ===== Mobile Sidebar =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+// ===== Init =====
+loadData();
+</script>
+</body>
+</html>
