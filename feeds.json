@@ -75,5 +75,19 @@
   { "id": "nature-medicine", "name": "Nature Medicine", "nameZh": "自然·医学", "url": "https://www.nature.com/nm.rss", "category": "研究", "color": "#D4503A", "lang": "en" },
   { "id": "nature-cardio", "name": "Nature Reviews Cardiology", "nameZh": "自然·心脏病学综述", "url": "https://www.nature.com/nrcardio.rss", "category": "研究", "color": "#E2563D", "lang": "en" },
   { "id": "fda-medwatch", "name": "FDA MedWatch", "nameZh": "FDA安全警报", "url": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/medwatch/rss.xml", "category": "监管", "color": "#8B0000", "lang": "en" },
-  { "id": "clinicaltrials-cv", "name": "ClinicalTrials.gov CV", "nameZh": "心血管临床试验", "url": "https://clinicaltrials.gov/ct2/results/rss.xml?rcv_d=&lup_d=14&sel_rss=mod14&cond=cardiovascular&count=50", "category": "研究", "color": "#2E7D32", "lang": "en" }
+  { "id": "clinicaltrials-cv", "name": "ClinicalTrials.gov CV", "nameZh": "心血管临床试验", "url": "https://clinicaltrials.gov/ct2/results/rss.xml?rcv_d=&lup_d=14&sel_rss=mod14&cond=cardiovascular&count=50", "category": "研究", "color": "#2E7D32", "lang": "en" },
+
+  { "id": "fierce-medtech", "name": "Fierce Biotech MedTech", "nameZh": "Fierce医疗科技", "url": "https://www.fiercebiotech.com/rss/medtech/xml", "category": "医疗科技", "color": "#FF6600", "lang": "en" },
+  { "id": "mobihealthnews", "name": "MobiHealthNews", "nameZh": "移动健康新闻", "url": "https://www.mobihealthnews.com/feed", "category": "医疗科技", "color": "#00B4D8", "lang": "en" },
+  { "id": "endpoints-news", "name": "Endpoints News", "nameZh": "Endpoints生物制药", "url": "https://endpoints.news/feed/", "category": "医药", "color": "#1B263B", "lang": "en" },
+  { "id": "mdo", "name": "Medical Design & Outsourcing", "nameZh": "医疗设计与外包", "url": "https://feeds.feedburner.com/MedicalDesignAndOutsourcing", "category": "医疗科技", "color": "#0077B6", "lang": "en" },
+  { "id": "md-network", "name": "Medical Device Network", "nameZh": "医疗器械网络", "url": "https://www.medicaldevice-network.com/feed/", "category": "医疗科技", "color": "#023E8A", "lang": "en" },
+  { "id": "mdb-all", "name": "Medical Design Briefs", "nameZh": "医疗设计简报", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs", "category": "医疗科技", "color": "#E85D04", "lang": "en" },
+  { "id": "mdb-materials", "name": "MDB Materials & Manufacturing", "nameZh": "MDB材料与制造", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/materials-manufacturing", "category": "医疗科技", "color": "#DC6601", "lang": "en" },
+  { "id": "mdb-design", "name": "MDB Design & Testing", "nameZh": "MDB设计与测试", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/design-testing", "category": "医疗科技", "color": "#D06B02", "lang": "en" },
+  { "id": "mdb-sensors", "name": "MDB Sensors & Wearables", "nameZh": "MDB传感器与可穿戴", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/sensors-wearables", "category": "医疗科技", "color": "#C47003", "lang": "en" },
+  { "id": "mdb-electronics", "name": "MDB Electronics & Software", "nameZh": "MDB电子与软件", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/electronics-software", "category": "医疗科技", "color": "#B87504", "lang": "en" },
+  { "id": "mdb-robotics", "name": "MDB Robotics & Automation", "nameZh": "MDB机器人与自动化", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/robotics-automation", "category": "医疗科技", "color": "#AC7A05", "lang": "en" },
+  { "id": "mdb-iomt", "name": "MDB IoMT & Connectivity", "nameZh": "MDB物联网与连接", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/iomt-connectivity", "category": "医疗科技", "color": "#A07F06", "lang": "en" },
+  { "id": "mdb-techbriefs", "name": "MDB Tech Briefs", "nameZh": "MDB技术简报", "url": "https://rss-hub-eight-dusky.vercel.app/medicaldesignbriefs/techbriefs", "category": "医疗科技", "color": "#948407", "lang": "en" }
 ]
